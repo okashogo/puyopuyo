@@ -9,12 +9,25 @@ const R = require('./img/R.jpg').default;
 // console.log(B);
 // import Y from './img/Y.jpg'
 // import P from './img/P.jpg'
-const Box : React.FC<{color:string}> = (props) => {
-  return <img src={props.color}/>;
+
+// const Box : React.FC<{color:string}> = (props) => {
+//     return <img src={props.color}/>;
+// }
+
+class Box extends React.Component<{color:string}> {
+  render() {
+    return (
+      <img src={this.props.color}/>
+    );
+  }
 }
 
-const Wall : React.FC = () => {
-  return <div className="wall"></div>
+class Wall extends React.Component {
+  render() {
+    return (
+      <div className="wall"></div>
+    );
+  }
 }
 
 console.log("start");
@@ -26,14 +39,18 @@ for (let i = 1; i <= 13; i++) {
   }
 }
 
+// Fieldを描画
 const Field : React.FC = () => {
   const fieldList = fieldIds.map((fieldId: Number) => {
+    // 左右に壁
     if(parseInt(fieldId.toString()) % 10 == 1 || parseInt(fieldId.toString()) % 10 == 8){
       return(<div key = {fieldId.toString()} id = {fieldId.toString()}><Wall /></div>);
     }
+    // 下に壁
     else if(Math.floor(parseInt(fieldId.toString()) / 10) == 13){
       return(<div key = {fieldId.toString()} id = {fieldId.toString()}><Wall /></div>);
     }
+    // それ以外は空
     else{
       return(<div key = {fieldId.toString()} id = {fieldId.toString()}></div>);
     }
@@ -74,9 +91,4 @@ class App extends React.Component {
 ReactDOM.render(
   <App />,
   document.getElementById("app")
-);
-
-ReactDOM.render(
-  <Wall />,
-  document.getElementById("11")
 );
