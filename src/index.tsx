@@ -35,6 +35,7 @@ interface IState {
   nextnowpuyo : string[];
   lock: Boolean;
   check: boolean[];
+  combonum: number;
 }
 
 class Field extends React.Component<{}, IState> {
@@ -47,6 +48,7 @@ class Field extends React.Component<{}, IState> {
       subpuyo: 3,
       lock: false,
       check: Array(8*13).fill(false),
+      combonum: 0,
     };
 
     for (let i = 0; i < 12; i++) {
@@ -132,7 +134,6 @@ class Field extends React.Component<{}, IState> {
             tmpSquares[i + 8] = tmpPuyoColor;
             this.setState({squares: tmpSquares});
             this.setState({lock: true});
-            this.sleep(10);
           }
         }
 
@@ -142,6 +143,7 @@ class Field extends React.Component<{}, IState> {
             var count:number = 0;
             if(this.state.squares[i] != W && this.state.squares[i] != ""){
               if(this.getConnectedCount(i, this.state.squares[i], count) >= 4){
+                this.setState({combonum: this.state.combonum+1});
                 this.vanishConnect(i, this.state.squares[i]);
                 this.setState({lock: false});
                 for (let i = 8*11 - 1; i >= 0; i--) {
@@ -152,7 +154,6 @@ class Field extends React.Component<{}, IState> {
                     tmpSquares[i + 8] = tmpPuyoColor;
                     this.setState({squares: tmpSquares});
                     this.setState({lock: true});
-                    this.sleep(10);
                   }
                 }
               }
@@ -181,13 +182,6 @@ class Field extends React.Component<{}, IState> {
     return count;
   }
 
- sleep(waitMsec: number) {
-  var startMsec = new Date();
-
-  // 指定ミリ秒間だけループさせる（CPUは常にビジー状態）
-  while (new Date().getTime() - startMsec.getTime() < waitMsec);
-}
-
   vanishConnect(i: number, puyoColor: string): void{
     if(this.state.squares[i] != puyoColor){
       return;
@@ -206,6 +200,7 @@ class Field extends React.Component<{}, IState> {
 
   nextPuyoChange(){
     if(!(this.state.lock)){
+      this.setState({combonum: 0});
       const tmpSquares = this.state.squares;
       const nextSquares = this.state.nextnowpuyo;
       this.setState({nowpuyo: 3 + 8});
@@ -320,6 +315,11 @@ class Field extends React.Component<{}, IState> {
         <div className="field">
           {fieldList}
         </div>
+        {this.state.combonum != 0 &&
+          <div>
+            <h1>{this.state.combonum}コンボ</h1>
+          </div>
+        }
       </div>
     );
   }
