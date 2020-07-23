@@ -61,6 +61,30 @@ class Field extends React.Component<{}, IState> {
 
   shiftPuyo(e: any) {
     var shiftNum: number = 0;
+    var angle: number = 0;
+    var diffNowSub : number;
+
+    // a
+    if(e.keyCode == 65){
+      diffNowSub = this.state.nowpuyo - this.state.subpuyo;
+      if(diffNowSub == 1 || diffNowSub == -1){
+        angle = 8 * diffNowSub;
+      }
+      if(diffNowSub == 8 || diffNowSub == -8){
+        angle = -1/8 * diffNowSub;
+      }
+    }
+    // s
+    if(e.keyCode == 83){
+      diffNowSub = this.state.nowpuyo - this.state.subpuyo;
+      if(diffNowSub == 1 || diffNowSub == -1){
+        angle = -8 * diffNowSub;
+      }
+      if(diffNowSub == 8 || diffNowSub == -8){
+        angle = 1/8 * diffNowSub;
+      }
+    }
+
     if(e.keyCode==40){
       shiftNum = 8;
     }
@@ -71,7 +95,7 @@ class Field extends React.Component<{}, IState> {
       shiftNum = -1;
     }
     if(shiftNum != 0){
-      if(this.state.squares[this.state.nowpuyo + shiftNum] == W || this.state.squares[this.state.nowpuyo + shiftNum] == W){
+      if(this.state.squares[this.state.nowpuyo + shiftNum] == W || this.state.squares[this.state.subpuyo + shiftNum] == W){
           return;
       }
       const tmpSquares = this.state.squares;
@@ -84,6 +108,18 @@ class Field extends React.Component<{}, IState> {
       tmpSquares[tmpNowPuyo] =  "";
       tmpSquares[tmpSubPuyo] =  "";
       tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
+      tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+      this.setState({squares: tmpSquares});
+    }
+    if(angle != 0){
+      if(this.state.squares[this.state.nowpuyo + angle] == W){
+          return;
+      }
+      const tmpSquares = this.state.squares;
+      const tmpSubPuyo = this.state.subpuyo;
+      const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+      this.setState({subpuyo: this.state.nowpuyo + angle});
+      tmpSquares[tmpSubPuyo] =  "";
       tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
       this.setState({squares: tmpSquares});
     }
