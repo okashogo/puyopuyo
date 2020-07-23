@@ -38,7 +38,7 @@ class Field extends React.Component<{}, IState> {
   constructor(props : string[]) {
     super(props);
     this.state = {
-      squares: Array(8*13).fill(null),
+      squares: Array(8*13).fill(""),
       nowpuyo: 3+8,
       subpuyo: 3,
     };
@@ -63,10 +63,19 @@ class Field extends React.Component<{}, IState> {
   }
 
   fallDown(){
-    if(this.state.squares[this.state.nowpuyo + 8] == W || this.state.squares[this.state.subpuyo + 8] == W){
+    if(this.state.nowpuyo + 8 != this.state.subpuyo){
+      if(this.state.squares[this.state.nowpuyo + 8] != ""){
         this.nextPuyoChange();
         return;
+      }
     }
+    if(this.state.subpuyo + 8 != this.state.nowpuyo){
+      if(this.state.squares[this.state.subpuyo + 8] != ""){
+        this.nextPuyoChange();
+        return;
+      }
+    }
+
     const tmpSquares = this.state.squares;
     const tmpNowPuyo = this.state.nowpuyo;
     const tmpSubPuyo = this.state.subpuyo;
@@ -126,8 +135,15 @@ class Field extends React.Component<{}, IState> {
       shiftNum = -1;
     }
     if(shiftNum != 0){
-      if(this.state.squares[this.state.nowpuyo + shiftNum] == W || this.state.squares[this.state.subpuyo + shiftNum] == W){
+      if(this.state.nowpuyo + shiftNum != this.state.subpuyo){
+        if(this.state.squares[this.state.nowpuyo + shiftNum] != ""){
           return;
+        }
+      }
+      if(this.state.subpuyo + shiftNum != this.state.nowpuyo){
+        if(this.state.squares[this.state.subpuyo + shiftNum] != ""){
+          return;
+        }
       }
       const tmpSquares = this.state.squares;
       const tmpNowPuyo = this.state.nowpuyo;
@@ -143,7 +159,7 @@ class Field extends React.Component<{}, IState> {
       this.setState({squares: tmpSquares});
     }
     if(angle != 0){
-      if(this.state.squares[this.state.nowpuyo + angle] == W){
+      if(this.state.squares[this.state.nowpuyo + angle] != ""){
           return;
       }
       const tmpSquares = this.state.squares;
