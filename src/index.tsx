@@ -32,6 +32,8 @@ interface IState {
   squares : string[];
   nowpuyo : number;
   subpuyo : number;
+  lock: Boolean;
+  check: boolean[],
 }
 
 class Field extends React.Component<{}, IState> {
@@ -41,6 +43,8 @@ class Field extends React.Component<{}, IState> {
       squares: Array(8*13).fill(""),
       nowpuyo: 3+8,
       subpuyo: 3,
+      lock: false,
+      check: Array(8*13).fill(false),
     };
     for (let i = 0; i < 12; i++) {
       this.state.squares[0 + i*8] = W
@@ -56,10 +60,10 @@ class Field extends React.Component<{}, IState> {
   }
 
   componentDidMount() {
-    window.addEventListener('keydown', this.shiftPuyo.bind(this));
-    setInterval(() => {
-      this.fallDown();
-    }, 1000);
+      window.addEventListener('keydown', this.shiftPuyo.bind(this));
+      setInterval(() => {
+        this.fallDown();
+      }, 600);
   }
 
   getRandomPuyo() {
@@ -79,40 +83,127 @@ class Field extends React.Component<{}, IState> {
   }
 
   fallDown(){
-    if(this.state.nowpuyo + 8 != this.state.subpuyo){
-      if(this.state.squares[this.state.nowpuyo + 8] != ""){
-        this.nextPuyoChange();
-        return;
+      if(this.state.nowpuyo + 8 != this.state.subpuyo){
+        if(this.state.squares[this.state.nowpuyo + 8] != ""){
+          this.setState({lock: true});
+          this.lockFallDown();
+          this.nextPuyoChange();
+          return;
+        }
       }
+      if(this.state.subpuyo + 8 != this.state.nowpuyo){
+        if(this.state.squares[this.state.subpuyo + 8] != ""){
+          this.setState({lock: true});
+          this.lockFallDown();
+          this.nextPuyoChange();
+          return;
+        }
+      }
+
+      const tmpSquares = this.state.squares;
+      const tmpNowPuyo = this.state.nowpuyo;
+      const tmpSubPuyo = this.state.subpuyo;
+      const tmpNowPuyoColor = this.state.squares[tmpNowPuyo];
+      const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+      this.setState({nowpuyo: this.state.nowpuyo + 8});
+      this.setState({subpuyo: this.state.subpuyo + 8});
+      tmpSquares[tmpNowPuyo] =  "";
+      tmpSquares[tmpSubPuyo] =  "";
+      tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
+      tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+      this.setState({squares: tmpSquares});
+  }
+
+  lockFallDown(){
+    while (this.state.lock) {
+        this.setState({lock: false});
+        for (let i = 8*11 - 1; i >= 0; i--) {
+          const tmpSquares = this.state.squares;
+          const tmpPuyoColor = this.state.squares[i];
+          if(this.state.squares[i] != "" && this.state.squares[i + 8] == ""){
+            tmpSquares[i] = "";
+            tmpSquares[i + 8] = tmpPuyoColor;
+            this.setState({squares: tmpSquares});
+            this.setState({lock: true});
+            console.log('3秒経過しました');
+          }
+        }
+
+        if(!this.state.lock){
+          this.setState({check: Array(8*13).fill(false)});
+          for (let i = 0; i < 8*12; i++) {
+            var count:number = 0;
+            if(this.state.squares[i] != W && this.state.squares[i] != ""){
+              if(this.getConnectedCount(i, this.state.squares[i], count) >= 4){
+                this.vanishConnect(i, this.state.squares[i]);
+                this.setState({lock: false});
+                for (let i = 8*11 - 1; i >= 0; i--) {
+                  const tmpSquares = this.state.squares;
+                  const tmpPuyoColor = this.state.squares[i];
+                  if(this.state.squares[i] != "" && this.state.squares[i + 8] == ""){
+                    tmpSquares[i] = "";
+                    tmpSquares[i + 8] = tmpPuyoColor;
+                    this.setState({squares: tmpSquares});
+                    this.setState({lock: true});
+                    console.log('3秒経過しました');
+                  }
+                }
+              }
+            }
+          }
+        }
     }
-    if(this.state.subpuyo + 8 != this.state.nowpuyo){
-      if(this.state.squares[this.state.subpuyo + 8] != ""){
-        this.nextPuyoChange();
-        return;
-      }
+  }
+
+  sleep(waitSec:number, callback:any) {
+
+    setTimeout(callback, waitSec);
+  }
+
+  getConnectedCount(i: number, puyoColor: string, count: number): number{
+    if(this.state.squares[i] != puyoColor){
+      return count;
+    }
+    if(this.state.check[i]){
+      return count;
+    }
+
+    count++;
+    this.state.check[i] = true;
+
+    count = this.getConnectedCount(i - 1, puyoColor, count);
+    count = this.getConnectedCount(i - 8, puyoColor, count);
+    count = this.getConnectedCount(i + 1, puyoColor, count);
+    count = this.getConnectedCount(i + 8, puyoColor, count);
+
+    return count;
+  }
+
+  vanishConnect(i: number, puyoColor: string): void{
+    if(this.state.squares[i] != puyoColor){
+      return;
     }
 
     const tmpSquares = this.state.squares;
-    const tmpNowPuyo = this.state.nowpuyo;
-    const tmpSubPuyo = this.state.subpuyo;
-    const tmpNowPuyoColor = this.state.squares[tmpNowPuyo];
-    const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
-    this.setState({nowpuyo: this.state.nowpuyo + 8});
-    this.setState({subpuyo: this.state.subpuyo + 8});
-    tmpSquares[tmpNowPuyo] =  "";
-    tmpSquares[tmpSubPuyo] =  "";
-    tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
-    tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+    tmpSquares[i] = "";
     this.setState({squares: tmpSquares});
+
+    this.vanishConnect(i - 1, puyoColor);
+    this.vanishConnect(i - 8, puyoColor);
+    this.vanishConnect(i + 1, puyoColor);
+    this.vanishConnect(i + 8, puyoColor);
+
   }
 
   nextPuyoChange(){
-    const tmpSquares = this.state.squares;
-    this.setState({nowpuyo: 3 + 8});
-    this.setState({subpuyo: 3});
-    tmpSquares[3] = this.getRandomPuyo();
-    tmpSquares[3 + 8] = this.getRandomPuyo();
-    this.setState({squares: tmpSquares});
+    if(!(this.state.lock)){
+      const tmpSquares = this.state.squares;
+      this.setState({nowpuyo: 3 + 8});
+      this.setState({subpuyo: 3});
+      tmpSquares[3] = this.getRandomPuyo();
+      tmpSquares[3 + 8] = this.getRandomPuyo();
+      this.setState({squares: tmpSquares});
+    }
   }
 
   shiftPuyo(e: any) {
@@ -120,71 +211,73 @@ class Field extends React.Component<{}, IState> {
     var angle: number = 0;
     var diffNowSub : number;
 
-    // a
-    if(e.keyCode == 65){
-      diffNowSub = this.state.nowpuyo - this.state.subpuyo;
-      if(diffNowSub == 1 || diffNowSub == -1){
-        angle = 8 * diffNowSub;
+    if(!(this.state.lock)){
+      // a
+      if(e.keyCode == 65){
+        diffNowSub = this.state.nowpuyo - this.state.subpuyo;
+        if(diffNowSub == 1 || diffNowSub == -1){
+          angle = 8 * diffNowSub;
+        }
+        if(diffNowSub == 8 || diffNowSub == -8){
+          angle = -1/8 * diffNowSub;
+        }
       }
-      if(diffNowSub == 8 || diffNowSub == -8){
-        angle = -1/8 * diffNowSub;
+      // s
+      if(e.keyCode == 83){
+        diffNowSub = this.state.nowpuyo - this.state.subpuyo;
+        if(diffNowSub == 1 || diffNowSub == -1){
+          angle = -8 * diffNowSub;
+        }
+        if(diffNowSub == 8 || diffNowSub == -8){
+          angle = 1/8 * diffNowSub;
+        }
       }
-    }
-    // s
-    if(e.keyCode == 83){
-      diffNowSub = this.state.nowpuyo - this.state.subpuyo;
-      if(diffNowSub == 1 || diffNowSub == -1){
-        angle = -8 * diffNowSub;
-      }
-      if(diffNowSub == 8 || diffNowSub == -8){
-        angle = 1/8 * diffNowSub;
-      }
-    }
 
-    if(e.keyCode==40){
-      shiftNum = 8;
-    }
-    if (e.keyCode==39) {
-      shiftNum = 1;
-    }
-    if(e.keyCode==37){
-      shiftNum = -1;
-    }
-    if(shiftNum != 0){
-      if(this.state.nowpuyo + shiftNum != this.state.subpuyo){
-        if(this.state.squares[this.state.nowpuyo + shiftNum] != ""){
-          return;
+      if(e.keyCode==40){
+        shiftNum = 8;
+      }
+      if (e.keyCode==39) {
+        shiftNum = 1;
+      }
+      if(e.keyCode==37){
+        shiftNum = -1;
+      }
+      if(shiftNum != 0){
+        if(this.state.nowpuyo + shiftNum != this.state.subpuyo){
+          if(this.state.squares[this.state.nowpuyo + shiftNum] != ""){
+            return;
+          }
         }
-      }
-      if(this.state.subpuyo + shiftNum != this.state.nowpuyo){
-        if(this.state.squares[this.state.subpuyo + shiftNum] != ""){
-          return;
+        if(this.state.subpuyo + shiftNum != this.state.nowpuyo){
+          if(this.state.squares[this.state.subpuyo + shiftNum] != ""){
+            return;
+          }
         }
+        const tmpSquares = this.state.squares;
+        const tmpNowPuyo = this.state.nowpuyo;
+        const tmpSubPuyo = this.state.subpuyo;
+        const tmpNowPuyoColor = this.state.squares[tmpNowPuyo];
+        const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+        this.setState({nowpuyo: this.state.nowpuyo + shiftNum});
+        this.setState({subpuyo: this.state.subpuyo + shiftNum});
+        tmpSquares[tmpNowPuyo] =  "";
+        tmpSquares[tmpSubPuyo] =  "";
+        tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
+        tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+        this.setState({squares: tmpSquares});
       }
-      const tmpSquares = this.state.squares;
-      const tmpNowPuyo = this.state.nowpuyo;
-      const tmpSubPuyo = this.state.subpuyo;
-      const tmpNowPuyoColor = this.state.squares[tmpNowPuyo];
-      const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
-      this.setState({nowpuyo: this.state.nowpuyo + shiftNum});
-      this.setState({subpuyo: this.state.subpuyo + shiftNum});
-      tmpSquares[tmpNowPuyo] =  "";
-      tmpSquares[tmpSubPuyo] =  "";
-      tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
-      tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
-      this.setState({squares: tmpSquares});
-    }
-    if(angle != 0){
-      if(this.state.squares[this.state.nowpuyo + angle] != ""){
-          return;
+      if(angle != 0){
+        if(this.state.squares[this.state.nowpuyo + angle] != ""){
+            return;
+        }
+        const tmpSquares = this.state.squares;
+        const tmpSubPuyo = this.state.subpuyo;
+        const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+        this.setState({subpuyo: this.state.nowpuyo + angle});
+        tmpSquares[tmpSubPuyo] =  "";
+        tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+        this.setState({squares: tmpSquares});
       }
-      const tmpSquares = this.state.squares;
-      const tmpSubPuyo = this.state.subpuyo;
-      const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
-      this.setState({subpuyo: this.state.nowpuyo + angle});
-      tmpSquares[tmpSubPuyo] =  "";
-      tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
-      this.setState({squares: tmpSquares});
     }
   }
 
