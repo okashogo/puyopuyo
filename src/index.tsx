@@ -32,8 +32,9 @@ interface IState {
   squares : string[];
   nowpuyo : number;
   subpuyo : number;
+  nextnowpuyo : string[];
   lock: Boolean;
-  check: boolean[],
+  check: boolean[];
 }
 
 class Field extends React.Component<{}, IState> {
@@ -41,17 +42,23 @@ class Field extends React.Component<{}, IState> {
     super(props);
     this.state = {
       squares: Array(8*13).fill(""),
+      nextnowpuyo: Array(2*2).fill(""),
       nowpuyo: 3+8,
       subpuyo: 3,
       lock: false,
       check: Array(8*13).fill(false),
     };
+
     for (let i = 0; i < 12; i++) {
       this.state.squares[0 + i*8] = W
       this.state.squares[7 + i*8] = W
     }
     for (let i = 0; i < 8; i++) {
       this.state.squares[8*12 + i] = W
+    }
+
+    for (let i = 0; i < 4; i++) {
+      this.state.nextnowpuyo[i] = this.getRandomPuyo();
     }
 
     this.state.squares[this.state.nowpuyo] = this.getRandomPuyo();
@@ -115,7 +122,7 @@ class Field extends React.Component<{}, IState> {
   }
 
   lockFallDown(){
-    while (this.state.lock) {
+    if (this.state.lock) {
         this.setState({lock: false});
         for (let i = 8*11 - 1; i >= 0; i--) {
           const tmpSquares = this.state.squares;
@@ -125,7 +132,7 @@ class Field extends React.Component<{}, IState> {
             tmpSquares[i + 8] = tmpPuyoColor;
             this.setState({squares: tmpSquares});
             this.setState({lock: true});
-            console.log('3秒経過しました');
+            this.sleep(10);
           }
         }
 
@@ -145,7 +152,7 @@ class Field extends React.Component<{}, IState> {
                     tmpSquares[i + 8] = tmpPuyoColor;
                     this.setState({squares: tmpSquares});
                     this.setState({lock: true});
-                    console.log('3秒経過しました');
+                    this.sleep(10);
                   }
                 }
               }
@@ -153,11 +160,6 @@ class Field extends React.Component<{}, IState> {
           }
         }
     }
-  }
-
-  sleep(waitSec:number, callback:any) {
-
-    setTimeout(callback, waitSec);
   }
 
   getConnectedCount(i: number, puyoColor: string, count: number): number{
@@ -179,6 +181,13 @@ class Field extends React.Component<{}, IState> {
     return count;
   }
 
+ sleep(waitMsec: number) {
+  var startMsec = new Date();
+
+  // 指定ミリ秒間だけループさせる（CPUは常にビジー状態）
+  while (new Date().getTime() - startMsec.getTime() < waitMsec);
+}
+
   vanishConnect(i: number, puyoColor: string): void{
     if(this.state.squares[i] != puyoColor){
       return;
@@ -198,10 +207,15 @@ class Field extends React.Component<{}, IState> {
   nextPuyoChange(){
     if(!(this.state.lock)){
       const tmpSquares = this.state.squares;
+      const nextSquares = this.state.nextnowpuyo;
       this.setState({nowpuyo: 3 + 8});
       this.setState({subpuyo: 3});
-      tmpSquares[3] = this.getRandomPuyo();
-      tmpSquares[3 + 8] = this.getRandomPuyo();
+      tmpSquares[3] = nextSquares[1];
+      tmpSquares[3 + 8] = nextSquares[0];
+      nextSquares[0] = nextSquares[2];
+      nextSquares[1] = nextSquares[3];
+      nextSquares[2] = this.getRandomPuyo();
+      nextSquares[3] = this.getRandomPuyo();
       this.setState({squares: tmpSquares});
     }
   }
@@ -288,8 +302,24 @@ class Field extends React.Component<{}, IState> {
       )
     });
     return (
-      <div className="field">
-        {fieldList}
+      <div style={{display: "flex"}}>
+        <div className="nextField">
+          <div className="nextField1">
+            <h3>next1</h3>
+            <Box color={this.state.nextnowpuyo[1]} />
+            <br />
+            <Box color={this.state.nextnowpuyo[0]} />
+          </div>
+          <div className="nextField2">
+            <h3>next2</h3>
+            <Box color={this.state.nextnowpuyo[3]} />
+            <br />
+            <Box color={this.state.nextnowpuyo[2]} />
+          </div>
+        </div>
+        <div className="field">
+          {fieldList}
+        </div>
       </div>
     );
   }
@@ -298,21 +328,7 @@ class Field extends React.Component<{}, IState> {
 class App extends React.Component {
   render() {
     return (
-      <div>
-        <div className="nextField">
-          <div className="nextField1">
-            <h3>next1</h3>
-            <Box color={B} />
-            <Box color={R} />
-          </div>
-          <div className="nextField2">
-            <h3>next2</h3>
-            <Box color={Y} />
-            <Box color={P} />
-          </div>
-        </div>
-        <Field />
-      </div>
+      <Field />
     );
   }
 }
