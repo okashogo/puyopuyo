@@ -5,7 +5,7 @@ import './index.css';
 // import G from './img/G.jpg'
 const B = require('./img/B.jpg').default;
 const R = require('./img/R.jpg').default;
-// const G = require('./img/G.jpg').default;
+const G = require('./img/G.jpg').default;
 const W = require('./img/W.jpg').default;
 
 // console.log(B);
@@ -18,8 +18,16 @@ const W = require('./img/W.jpg').default;
 
 class Box extends React.Component<{color:string}> {
   render() {
+    const emptyJudge = this.props.color;
+    var dom:any;
+    if(!(emptyJudge)) {
+      dom = <div></div>
+    }
+    else{
+      dom = <img src={emptyJudge}/>
+    }
     return (
-      <img src={this.props.color}/>
+      dom
     );
   }
 }
@@ -34,25 +42,18 @@ class Box extends React.Component<{color:string}> {
 
 console.log("start");
 
-const fieldIds : Number[] = [];
-for (let i = 1; i <= 13; i++) {
-  for (let j = 1; j <= 8; j++) {
-     fieldIds.push(i*10 + j);
-  }
-}
-
 // Fieldを描画
 interface IState {
-  squares : String[];
-  nowpuyo : Number;
+  squares : string[];
+  nowpuyo : number;
 }
 
 class Field extends React.Component<{}, IState> {
   constructor(props : string[]) {
     super(props);
     this.state = {
-      squares: Array(8*13).fill(B),
-      nowpuyo: 10,
+      squares: Array(8*13).fill(null),
+      nowpuyo: 3,
     };
     for (let i = 0; i < 12; i++) {
       this.state.squares[0 + i*8] = W
@@ -62,20 +63,37 @@ class Field extends React.Component<{}, IState> {
       this.state.squares[8*12 + i] = W
     }
 
+    this.state.squares[this.state.nowpuyo] = G
+
   }
 
-  // renderSquare(i: Number) {
-  //   return (
-  //     <Box
-  //       color={this.state.squares[i]}
-  //     />
-  //   );
-  // }
+  componentDidMount() {
+    window.addEventListener('keydown', this.shiftPuyo.bind(this));
+  }
+
+  shiftPuyo(e: any) {
+    var shiftNum: number = 0;
+    if(e.keyCode==40){
+      shiftNum = 8;
+    }
+    if (e.keyCode==39) {
+      shiftNum = 1;
+    }
+    if(e.keyCode==37){
+      shiftNum = -1;
+    }
+    const tmpSquares = this.state.squares;
+    const tmpNowPuyo = this.state.nowpuyo;
+    tmpSquares[tmpNowPuyo] =  "";
+    this.setState({nowpuyo: this.state.nowpuyo + shiftNum});
+    tmpSquares[this.state.nowpuyo] =  G;
+    this.setState({squares: tmpSquares});
+  }
 
   render(){
     const fieldList = this.state.squares.map((output: string, key) => {
       return(
-        <div key = {key.toString()} id = {key.toString()} onClick={() => alert("aaa")}><Box color={output}/></div>
+        <div key = {key.toString()} id = {key.toString()}><Box color={output}/></div>
       )
     });
     // const fieldList = fieldIds.map((fieldId: Number) => {
@@ -144,10 +162,16 @@ ReactDOM.render(
   document.getElementById("app")
 );
 
-window.addEventListener("keydown",keydown);
-
-function keydown(event:any){
-  if(event.keyCode==40){alert("下")}
-  if(event.keyCode==39){alert("右")}
-  if(event.keyCode==37){alert("左")}
-}
+// window.addEventListener("keydown",keydown);
+//
+// function keydown(event:any){
+//   if(event.keyCode==40){
+//     alert("下")
+//   }
+//   if(event.keyCode==39){
+//     alert("右")
+//   }
+//   if(event.keyCode==37){
+//     alert("左")
+//   }
+// }
