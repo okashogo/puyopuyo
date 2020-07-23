@@ -57,6 +57,28 @@ class Field extends React.Component<{}, IState> {
 
   componentDidMount() {
     window.addEventListener('keydown', this.shiftPuyo.bind(this));
+    setInterval(() => {
+      this.fallDown();
+    }, 1000);
+  }
+
+  fallDown(){
+    console.log("oka");
+    if(this.state.squares[this.state.nowpuyo + 8] == W || this.state.squares[this.state.subpuyo + 8] == W){
+        return;
+    }
+    const tmpSquares = this.state.squares;
+    const tmpNowPuyo = this.state.nowpuyo;
+    const tmpSubPuyo = this.state.subpuyo;
+    const tmpNowPuyoColor = this.state.squares[tmpNowPuyo];
+    const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+    this.setState({nowpuyo: this.state.nowpuyo + 8});
+    this.setState({subpuyo: this.state.subpuyo + 8});
+    tmpSquares[tmpNowPuyo] =  "";
+    tmpSquares[tmpSubPuyo] =  "";
+    tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
+    tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+    this.setState({squares: tmpSquares});
   }
 
   shiftPuyo(e: any) {
