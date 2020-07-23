@@ -63,8 +63,8 @@ class Field extends React.Component<{}, IState> {
   }
 
   fallDown(){
-    console.log("oka");
     if(this.state.squares[this.state.nowpuyo + 8] == W || this.state.squares[this.state.subpuyo + 8] == W){
+        this.nextPuyoChange();
         return;
     }
     const tmpSquares = this.state.squares;
@@ -78,6 +78,15 @@ class Field extends React.Component<{}, IState> {
     tmpSquares[tmpSubPuyo] =  "";
     tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
     tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+    this.setState({squares: tmpSquares});
+  }
+
+  nextPuyoChange(){
+    const tmpSquares = this.state.squares;
+    this.setState({nowpuyo: 3 + 8});
+    this.setState({subpuyo: 3});
+    tmpSquares[3] = Y;
+    tmpSquares[3 + 8] = P;
     this.setState({squares: tmpSquares});
   }
 
