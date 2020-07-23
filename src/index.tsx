@@ -50,8 +50,8 @@ class Field extends React.Component<{}, IState> {
       this.state.squares[8*12 + i] = W
     }
 
-    this.state.squares[this.state.nowpuyo] = G
-    this.state.squares[this.state.subpuyo] = R
+    this.state.squares[this.state.nowpuyo] = this.getRandomPuyo();
+    this.state.squares[this.state.subpuyo] = this.getRandomPuyo();
 
   }
 
@@ -60,6 +60,22 @@ class Field extends React.Component<{}, IState> {
     setInterval(() => {
       this.fallDown();
     }, 1000);
+  }
+
+  getRandomPuyo() {
+    var randomNum:Number = Math.floor(Math.random() * 5);
+    switch(randomNum){
+      case 0:
+        return B;
+      case 1:
+        return R;
+      case 2:
+        return G;
+      case 3:
+        return P;
+      case 4:
+        return Y;
+    }
   }
 
   fallDown(){
@@ -94,8 +110,8 @@ class Field extends React.Component<{}, IState> {
     const tmpSquares = this.state.squares;
     this.setState({nowpuyo: 3 + 8});
     this.setState({subpuyo: 3});
-    tmpSquares[3] = Y;
-    tmpSquares[3 + 8] = P;
+    tmpSquares[3] = this.getRandomPuyo();
+    tmpSquares[3 + 8] = this.getRandomPuyo();
     this.setState({squares: tmpSquares});
   }
 
