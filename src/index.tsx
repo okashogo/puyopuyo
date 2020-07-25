@@ -38,6 +38,7 @@ interface IState {
   combonum: number;
   combonumTmp: Boolean;
   specialAngel: number;
+  noUseColor: number;
 }
 
 class Field extends React.Component<{}, IState> {
@@ -53,6 +54,7 @@ class Field extends React.Component<{}, IState> {
       combonum: 0,
       combonumTmp: false,
       specialAngel: 0,
+      noUseColor: Math.floor(Math.random() * 5),
     };
 
     for (let i = 0; i < 12; i++) {
@@ -80,18 +82,21 @@ class Field extends React.Component<{}, IState> {
   }
 
   getRandomPuyo() {
-    var randomNum:Number = Math.floor(Math.random() * 5);
+    var randomNum:Number;
+
+    while ((randomNum = Math.floor(Math.random() * 5)) == this.state.noUseColor);
+
     switch(randomNum){
       case 0:
         return B;
       case 1:
         return R;
       case 2:
-        return G;
+        return Y;
       case 3:
         return P;
       case 4:
-        return Y;
+        return G;
     }
   }
 
@@ -168,6 +173,10 @@ class Field extends React.Component<{}, IState> {
             }
           }
           if(vanishFlag){
+            if(this.state.combonumTmp){
+              this.setState({combonumTmp: false});
+              this.setState({combonum: 0});
+            }
             this.setState({combonum: this.state.combonum+1});
           }
         }
