@@ -37,6 +37,7 @@ interface IState {
   check: boolean[];
   combonum: number;
   combonumTmp: Boolean;
+  specialAngel: number;
 }
 
 class Field extends React.Component<{}, IState> {
@@ -51,6 +52,7 @@ class Field extends React.Component<{}, IState> {
       check: Array(8*13).fill(false),
       combonum: 0,
       combonumTmp: false,
+      specialAngel: 0,
     };
 
     for (let i = 0; i < 12; i++) {
@@ -243,6 +245,7 @@ class Field extends React.Component<{}, IState> {
       nextSquares[2] = this.getRandomPuyo();
       nextSquares[3] = this.getRandomPuyo();
       this.setState({squares: tmpSquares});
+      this.setState({specialAngel: 0});
     }
   }
 
@@ -250,10 +253,13 @@ class Field extends React.Component<{}, IState> {
     var shiftNum: number = 0;
     var angle: number = 0;
     var diffNowSub : number;
+    // aは-1 , sは1
+    var angleKey: number = 0;
 
     if(!(this.state.lock)){
       // a
       if(e.keyCode == 65){
+        angleKey = -1;
         diffNowSub = this.state.nowpuyo - this.state.subpuyo;
         if(diffNowSub == 1 || diffNowSub == -1){
           angle = 8 * diffNowSub;
@@ -264,6 +270,7 @@ class Field extends React.Component<{}, IState> {
       }
       // s
       if(e.keyCode == 83){
+        angleKey = 1;
         diffNowSub = this.state.nowpuyo - this.state.subpuyo;
         if(diffNowSub == 1 || diffNowSub == -1){
           angle = -8 * diffNowSub;
@@ -309,7 +316,6 @@ class Field extends React.Component<{}, IState> {
       if(angle != 0){
         if(this.state.squares[this.state.nowpuyo + angle] != ""){
           if(this.state.squares[this.state.nowpuyo - angle] == ""){
-            console.log('oka');
             const tmpSquares = this.state.squares;
             const tmpSubPuyo = this.state.subpuyo;
             const tmpNowPuyo = this.state.nowpuyo;
@@ -322,6 +328,24 @@ class Field extends React.Component<{}, IState> {
             tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
             tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
             this.setState({squares: tmpSquares});
+          }
+          else{
+            if(Math.abs(this.state.specialAngel + angleKey) == 0 || Math.abs(this.state.specialAngel + angleKey) == 2){
+              //180度回転させる
+              this.setState({specialAngel: 0});
+              const tmpSquares = this.state.squares;
+              const tmpSubPuyo = this.state.subpuyo;
+              const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+              if(this.state.squares[this.state.nowpuyo + this.state.nowpuyo - this.state.subpuyo] == ""){
+                this.setState({subpuyo: this.state.nowpuyo + this.state.nowpuyo - this.state.subpuyo });
+                tmpSquares[tmpSubPuyo] =  "";
+                tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+                this.setState({squares: tmpSquares});
+              }
+            }else{
+              // specialAngelをtrueにする。
+              this.setState({specialAngel: this.state.specialAngel + angleKey});
+            }
           }
             return;
         }
