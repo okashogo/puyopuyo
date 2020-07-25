@@ -36,6 +36,7 @@ interface IState {
   lock: Boolean;
   check: boolean[];
   combonum: number;
+  combonumTmp: Boolean;
 }
 
 class Field extends React.Component<{}, IState> {
@@ -49,6 +50,7 @@ class Field extends React.Component<{}, IState> {
       lock: false,
       check: Array(8*13).fill(false),
       combonum: 0,
+      combonumTmp: false,
     };
 
     for (let i = 0; i < 12; i++) {
@@ -126,7 +128,6 @@ class Field extends React.Component<{}, IState> {
   lockFallDown(){
     if (this.state.lock) {
         this.setState({lock: false});
-        this.setState({combonum: 0});
         //宙にあるぷよをすべて落とす
         for (let i = 8*11 - 1; i >= 0; i--) {
           const tmpSquares = this.state.squares;
@@ -222,6 +223,15 @@ class Field extends React.Component<{}, IState> {
 
   nextPuyoChange(){
     if(!(this.state.lock)){
+      if(this.state.combonum != 0){
+        if(this.state.combonumTmp){
+          this.setState({combonum: 0});
+          this.setState({combonumTmp: false});
+        }
+        else{
+          this.setState({combonumTmp: true});
+        }
+      }
       const tmpSquares = this.state.squares;
       const nextSquares = this.state.nextnowpuyo;
       this.setState({nowpuyo: 3 + 8});
