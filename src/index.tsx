@@ -127,6 +127,7 @@ class Field extends React.Component<{}, IState> {
     if (this.state.lock) {
         this.setState({lock: false});
         this.setState({combonum: 0});
+        //宙にあるぷよをすべて落とす
         for (let i = 8*11 - 1; i >= 0; i--) {
           const tmpSquares = this.state.squares;
           const tmpPuyoColor = this.state.squares[i];
@@ -138,6 +139,7 @@ class Field extends React.Component<{}, IState> {
           }
         }
 
+        // ぷよを消す
         if(!this.state.lock){
           this.setState({check: Array(8*13).fill(false)});
           var vanishFlag!: boolean;
@@ -165,6 +167,20 @@ class Field extends React.Component<{}, IState> {
           if(vanishFlag){
             this.setState({combonum: this.state.combonum+1});
           }
+        }
+
+        if(this.state.squares[3] != ""){
+          alert("ゲームオーバー！！");
+          var squaresRestart = [];
+          squaresRestart = Array(8*13).fill("");
+          for (let i = 0; i < 12; i++) {
+            squaresRestart[0 + i*8] = W
+            squaresRestart[7 + i*8] = W
+          }
+          for (let i = 0; i < 8; i++) {
+            squaresRestart[8*12 + i] = W
+          }
+          this.setState({squares: squaresRestart});
         }
     }
   }
