@@ -32,7 +32,7 @@ interface IState {
   squares : string[];
   nowpuyo : number;
   subpuyo : number;
-  nextnowpuyo : string[];
+  nextpuyo : string[];
   lock: Boolean;
   check: boolean[];
   combonum: number;
@@ -44,7 +44,7 @@ class Field extends React.Component<{}, IState> {
     super(props);
     this.state = {
       squares: Array(8*13).fill(""),
-      nextnowpuyo: Array(2*2).fill(""),
+      nextpuyo: Array(2*2).fill(""),
       nowpuyo: 3+8,
       subpuyo: 3,
       lock: false,
@@ -62,7 +62,7 @@ class Field extends React.Component<{}, IState> {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.state.nextnowpuyo[i] = this.getRandomPuyo();
+      this.state.nextpuyo[i] = this.getRandomPuyo();
     }
 
     this.state.squares[this.state.nowpuyo] = this.getRandomPuyo();
@@ -233,7 +233,7 @@ class Field extends React.Component<{}, IState> {
         }
       }
       const tmpSquares = this.state.squares;
-      const nextSquares = this.state.nextnowpuyo;
+      const nextSquares = this.state.nextpuyo;
       this.setState({nowpuyo: 3 + 8});
       this.setState({subpuyo: 3});
       tmpSquares[3] = nextSquares[1];
@@ -308,6 +308,21 @@ class Field extends React.Component<{}, IState> {
       }
       if(angle != 0){
         if(this.state.squares[this.state.nowpuyo + angle] != ""){
+          if(this.state.squares[this.state.nowpuyo - angle] == ""){
+            console.log('oka');
+            const tmpSquares = this.state.squares;
+            const tmpSubPuyo = this.state.subpuyo;
+            const tmpNowPuyo = this.state.nowpuyo;
+            const tmpSubPuyoColor = this.state.squares[tmpSubPuyo];
+            const tmpNowPuyoColor = this.state.squares[tmpNowPuyo];
+            this.setState({nowpuyo: this.state.nowpuyo -  angle});
+            this.setState({subpuyo: tmpNowPuyo});
+
+            tmpSquares[tmpSubPuyo] =  "";
+            tmpSquares[this.state.subpuyo] =  tmpSubPuyoColor;
+            tmpSquares[this.state.nowpuyo] =  tmpNowPuyoColor;
+            this.setState({squares: tmpSquares});
+          }
             return;
         }
         const tmpSquares = this.state.squares;
@@ -334,15 +349,15 @@ class Field extends React.Component<{}, IState> {
           <div className="nextField">
             <div className="nextField1">
               <h3>next1</h3>
-              <Box color={this.state.nextnowpuyo[1]} />
+              <Box color={this.state.nextpuyo[1]} />
               <br />
-              <Box color={this.state.nextnowpuyo[0]} />
+              <Box color={this.state.nextpuyo[0]} />
             </div>
             <div className="nextField2">
               <h3>next2</h3>
-              <Box color={this.state.nextnowpuyo[3]} />
+              <Box color={this.state.nextpuyo[3]} />
               <br />
-              <Box color={this.state.nextnowpuyo[2]} />
+              <Box color={this.state.nextpuyo[2]} />
             </div>
           </div>
           <div className="field">
