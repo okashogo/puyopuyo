@@ -126,6 +126,7 @@ class Field extends React.Component<{}, IState> {
   lockFallDown(){
     if (this.state.lock) {
         this.setState({lock: false});
+        this.setState({combonum: 0});
         for (let i = 8*11 - 1; i >= 0; i--) {
           const tmpSquares = this.state.squares;
           const tmpPuyoColor = this.state.squares[i];
@@ -139,11 +140,13 @@ class Field extends React.Component<{}, IState> {
 
         if(!this.state.lock){
           this.setState({check: Array(8*13).fill(false)});
+          var vanishFlag!: boolean;
+          vanishFlag = false;
           for (let i = 0; i < 8*12; i++) {
             var count:number = 0;
             if(this.state.squares[i] != W && this.state.squares[i] != ""){
               if(this.getConnectedCount(i, this.state.squares[i], count) >= 4){
-                this.setState({combonum: this.state.combonum+1});
+                vanishFlag = true;
                 this.vanishConnect(i, this.state.squares[i]);
                 this.setState({lock: false});
                 for (let i = 8*11 - 1; i >= 0; i--) {
@@ -158,6 +161,9 @@ class Field extends React.Component<{}, IState> {
                 }
               }
             }
+          }
+          if(vanishFlag){
+            this.setState({combonum: this.state.combonum+1});
           }
         }
     }
@@ -200,7 +206,6 @@ class Field extends React.Component<{}, IState> {
 
   nextPuyoChange(){
     if(!(this.state.lock)){
-      this.setState({combonum: 0});
       const tmpSquares = this.state.squares;
       const nextSquares = this.state.nextnowpuyo;
       this.setState({nowpuyo: 3 + 8});
@@ -297,29 +302,32 @@ class Field extends React.Component<{}, IState> {
       )
     });
     return (
-      <div style={{display: "flex"}}>
-        <div className="nextField">
-          <div className="nextField1">
-            <h3>next1</h3>
-            <Box color={this.state.nextnowpuyo[1]} />
-            <br />
-            <Box color={this.state.nextnowpuyo[0]} />
+      <div>
+        <h1>ぷよぷよ</h1>
+        <div style={{display: "flex"}}>
+          <div className="nextField">
+            <div className="nextField1">
+              <h3>next1</h3>
+              <Box color={this.state.nextnowpuyo[1]} />
+              <br />
+              <Box color={this.state.nextnowpuyo[0]} />
+            </div>
+            <div className="nextField2">
+              <h3>next2</h3>
+              <Box color={this.state.nextnowpuyo[3]} />
+              <br />
+              <Box color={this.state.nextnowpuyo[2]} />
+            </div>
           </div>
-          <div className="nextField2">
-            <h3>next2</h3>
-            <Box color={this.state.nextnowpuyo[3]} />
-            <br />
-            <Box color={this.state.nextnowpuyo[2]} />
+          <div className="field">
+            {fieldList}
           </div>
+          {this.state.combonum != 0 &&
+            <div>
+              <h1>{this.state.combonum}コンボ</h1>
+            </div>
+          }
         </div>
-        <div className="field">
-          {fieldList}
-        </div>
-        {this.state.combonum != 0 &&
-          <div>
-            <h1>{this.state.combonum}コンボ</h1>
-          </div>
-        }
       </div>
     );
   }
